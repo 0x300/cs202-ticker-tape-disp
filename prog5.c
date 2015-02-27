@@ -39,7 +39,7 @@ void scrollMessage(int signum)
     signal(SIGALRM, scrollMessage); //reset signal binding jic
 
     mvprintw(row, col-1, "%.*s", maxCharsToPrint-leftTruncate, fileBuffer+leftTruncate);
-    // mvprintw(row-2, 0, "DEBUG: maxCharsToPrint = %d, fileSize = %d", maxCharsToPrint, fileSize);
+    // mvprintw(row-2, 0, "DEBUG: maxCharsToPrint = %d, strlen = %d", maxCharsToPrint, strlen(fileBuffer));
 
     if(col-1 != 0)
     {
@@ -132,6 +132,8 @@ int main( int argc, char* argv[] )
     rewind(file); //back to the start
 
     fileBuffer = malloc(fileSize+1);
+    fileBuffer[fileSize+1] = '\0'; //need to remember this
+
     fread(fileBuffer, fileSize, 1, file); //read whole file
     fclose(file);
     // printf("file size: %d\n", fsize);
