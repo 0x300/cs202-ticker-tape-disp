@@ -13,6 +13,7 @@
 #include <sys/time.h>
 #include <curses.h>
 #include <getopt.h>
+#include <string.h>
 
 //global declarations
 int row, col = 0; //current row, col
@@ -37,7 +38,8 @@ void scrollMessage(int signum)
 {
     signal(SIGALRM, scrollMessage); //reset signal binding jic
 
-    mvprintw(row, col-1, "%.*s", maxCharsToPrint, fileBuffer + leftTruncate);
+    mvprintw(row, col-1, "%.*s", maxCharsToPrint-leftTruncate, fileBuffer+leftTruncate);
+    // mvprintw(row-2, 0, "DEBUG: maxCharsToPrint = %d, fileSize = %d", maxCharsToPrint, fileSize);
 
     if(col-1 != 0)
     {
@@ -48,7 +50,8 @@ void scrollMessage(int signum)
         leftTruncate++;
     }
 
-    if(maxCharsToPrint < numCols) maxCharsToPrint++;
+    if(maxCharsToPrint < fileSize) maxCharsToPrint++;
+
 
     if(leftTruncate == fileSize)
     {
