@@ -139,6 +139,7 @@ int main( int argc, char* argv[] )
 
     getmaxyx(stdscr, numRows, numCols); //can only use after initscr()
     col = numCols; //start in right corner of window
+    row = numRows/2; //row should be approximately the middle
     
     signal(SIGALRM, scrollMessage);
 
