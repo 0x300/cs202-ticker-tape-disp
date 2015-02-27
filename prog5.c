@@ -114,11 +114,13 @@ int main( int argc, char* argv[] )
             default:
                 break;
         }
-        if(argv[optind] == NULL)
-        {
-            printf("Need to provide filename..\n");
-            exit(0);
-        }
+    }
+
+    //handle one arg after processing options
+    if(argv[optind] == NULL)
+    {
+        printf("Need to provide filename..\n");
+        exit(0);
     }
 
     FILE *file = fopen(argv[optind], "r"); //open the file for reading
