@@ -12,20 +12,27 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <curses.h>
+#include <getopt.h>
 
 //global declarations
 int row, col = 0; //current row, col
 int numRows, numCols; //number of rows, cols
 int maxCharsToPrint = 1; //max number of characters to print to window
 int leftTruncate = 0; //chars to truncate from left side of the screen
-int msDelay = 100; //default delay between scrolling
+int msDelay = 1000; //default delay between scrolling
 char *fileBuffer; //file buffer to be dynamically allocated later
 long fileSize; //size of input file
+char *fileName; //name of input file
 
 //global options
-int loopMode = 0;
+int loopMode = 0; //en for loop mode
 
-
+/*****************************************************************************/
+/* Function: scrollMessage                                                   */
+/* Purpose: display the message on the screen                                */
+/* Parameters: int signum                                                    */
+/* Returns: void                                                             */
+/*****************************************************************************/
 void scrollMessage(int signum)
 {
     signal(SIGALRM, scrollMessage); //reset signal binding jic
@@ -59,11 +66,15 @@ void scrollMessage(int signum)
         }
     }
 
-    mvprintw(1,0, "col-1 = %d, leftTruncate = %d, fileSize = %d, maxCharsToPrint = %d", col-1, leftTruncate, fileSize, maxCharsToPrint);
     refresh();
 }
 
-//utility copied directly from textbook
+/*****************************************************************************/
+/* Function: setTicker                                                       */
+/* Purpose: set alarm time                                                   */
+/* Parameters: int n_msecs                                                   */
+/* Returns: int                                                              */
+/*****************************************************************************/
 int setTicker( int n_msecs )
 {
     struct itimerval new_timeset; //creating new struct itimerval to set the timer
@@ -82,13 +93,35 @@ int setTicker( int n_msecs )
 
 /*****************************************************************************/
 /* Function: main                                                            */
-/* Purpose:                                                                  */
+/* Purpose: handle args, start ticker tap                                    */
 /* Parameters: int argc, char* argv[]                                        */
 /* Returns: int                                                              */
 /*****************************************************************************/
 int main( int argc, char* argv[] )
 {
-    FILE *file = fopen("test", "r"); //open the file for reading
+    //handle options/args
+    int opt; //option to handle
+    while ((opt = getopt(argc, argv, "t:l")) != -1) {
+        switch (opt) {
+            case 't':
+                //manual delay time
+                msDelay = atoi(optarg);
+                break;
+            case 'l':
+                //enable looping
+                loopMode = 1;
+                break;
+            default:
+                break;
+        }
+        if(argv[optind] == NULL)
+        {
+            printf("Need to provide filename..\n");
+            exit(0);
+        }
+    }
+
+    FILE *file = fopen(argv[optind], "r"); //open the file for reading
     fseek(file, 0, SEEK_END); //seek to end
     fileSize = ftell(file); //store the end pos as file size
     rewind(file); //back to the start
@@ -100,13 +133,13 @@ int main( int argc, char* argv[] )
     
     initscr();
     curs_set(0); //no curser
-    // noecho();
     clear();
 
     getmaxyx(stdscr, numRows, numCols); //can only use after initscr()
     col = numCols; //start in right corner of window
     
     signal(SIGALRM, scrollMessage);
+
     if(setTicker(msDelay) == -1)
     {
         perror("setTicker");
